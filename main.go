@@ -38,7 +38,7 @@ func generateCertificate(i int, pool *gopool.GoPool) {
 	defer pool.Done()
 
 	if i%10000 == 0 {
-		log.Debug(i, "certificates generated")
+		log.Debug(i, " certificates generated")
 	}
 
 	certBytes, keyBytes, err := staking.NewCertAndKeyBytes()
