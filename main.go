@@ -38,7 +38,7 @@ func generateCertificate(i int, pool *gopool.GoPool) {
 	defer pool.Done()
 
 	if i%10000 == 0 {
-		log.Debug(i, " certificates generated")
+		log.Info(i, " certificates generated")
 	}
 
 	certBytes, keyBytes, err := staking.NewCertAndKeyBytes()
@@ -58,6 +58,7 @@ func generateCertificate(i int, pool *gopool.GoPool) {
 	}
 	nodeIDFromCert := ids.NodeIDFromCert(cert.Leaf)
 	nodeID := nodeIDFromCert.String()
+	log.Debug(i, " ", nodeID)
 	for _, symbol := range WHITELIST {
 		if nodeID == symbol {
 			log.Info(nodeID)
@@ -69,6 +70,10 @@ func generateCertificate(i int, pool *gopool.GoPool) {
 }
 
 func main() {
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
 	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: true,

@@ -8,4 +8,5 @@ RUN go build -o main .
 FROM alpine:latest
 WORKDIR /
 COPY --from=builder /app/main .
+ENV LOG_LEVEL=info
 CMD ["/main"]
