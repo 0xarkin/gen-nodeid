@@ -1,0 +1,1 @@
+# generate Avalanche NodeID
