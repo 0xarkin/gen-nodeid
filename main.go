@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"strings"
 	"fmt"
 	"os"
 
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-    certsDir = "certs"
+    certsDir = "./certs"
 )
 
 var WHITELIST = []string {
@@ -32,6 +33,13 @@ func saveBytesToFile(bytes []byte, path string) {
 	if err := file.Close(); err != nil {
 		log.Warn("couldn't close file: %w", err)
 	}
+}
+
+func containsI(a string, b string) bool {
+	return strings.Contains(
+		strings.ToLower(a),
+		strings.ToLower(b),
+	)
 }
 
 func generateCertificate(i int, pool *gopool.GoPool) {
@@ -60,26 +68,31 @@ func generateCertificate(i int, pool *gopool.GoPool) {
 	nodeID := nodeIDFromCert.String()
 	log.Debug(i, " ", nodeID)
 	for _, symbol := range WHITELIST {
-		if nodeID == symbol {
-			log.Info(nodeID)
-			os.MkdirAll(fmt.Sprintf("certs/%s", nodeID), os.ModePerm)
-			saveBytesToFile(certBytes, fmt.Sprintf("%s/%s/file.cert", certsDir, nodeID))
-			saveBytesToFile(keyBytes, fmt.Sprintf("%s/%s/file.key", certsDir, nodeID))
+		if containsI(nodeID, symbol) {
+			log.Info(i, " ", nodeID)
+			dir := fmt.Sprintf("%s/%s", certsDir, nodeID)
+			os.MkdirAll(dir, 0755)
+			saveBytesToFile(certBytes, fmt.Sprintf("%s/cert.crt", dir))
+			saveBytesToFile(keyBytes, fmt.Sprintf("%s/cert.key", dir))
 		}
 	}
 }
 
 func main() {
 	logLevel := os.Getenv("LOG_LEVEL")
-	if logLevel == "" {
-		logLevel = "info"
+	level, err := log.ParseLevel(logLevel)
+	if err != nil {
+		log.Warn("couldn't parse log level: %w", err)
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(level)
 	}
-	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
-		
 	})
+
+	log.Debug("debug mode enabled")
 	log.Info("starting programm...")
 
 	i := 0
